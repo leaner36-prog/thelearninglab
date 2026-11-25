@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import {
   CheckCircle2,
   Loader2,
@@ -41,6 +41,17 @@ export function Booking() {
     e.preventDefault();
     setStatus('submitting');
     setErrorMsg('');
+
+    if (!isSupabaseConfigured) {
+      // No backend configured (e.g. missing env vars on Vercel) —
+      // show success in demo mode so the page never crashes.
+      setStatus('success');
+      setFullName('');
+      setPhone('');
+      setProgram('');
+      setLevel('');
+      return;
+    }
 
     const { error } = await supabase.from('registrations').insert({
       full_name: fullName.trim(),
@@ -120,6 +131,11 @@ export function Booking() {
                   <span className="font-semibold text-gold-600">24 giờ</span>{' '}
                   tới để sắp xếp lịch học thử và tư vấn lộ trình.
                 </p>
+                {!isSupabaseConfigured && (
+                  <p className="mt-2 max-w-sm rounded-lg bg-gold-50 px-3 py-2 text-xs text-gold-700">
+                    Chế độ demo: đăng ký chưa được lưu vì chưa kết nối cơ sở dữ liệu.
+                  </p>
+                )}
                 <button
                   onClick={() => setStatus('idle')}
                   className="mt-6 rounded-full border-2 border-burgundy-200 px-6 py-2.5 text-sm font-semibold text-burgundy-700 transition-colors hover:border-burgundy-700 hover:bg-burgundy-50"
